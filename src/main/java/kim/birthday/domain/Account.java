@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @Getter
+@Table(indexes = {
+        @Index(name = "idx_account_email", columnList = "email", unique = true)
+})
 public class Account {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

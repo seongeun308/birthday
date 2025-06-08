@@ -1,5 +1,7 @@
 package kim.birthday;
 
+import kim.birthday.common.error.AccountErrorCode;
+import kim.birthday.common.exception.AccountException;
 import kim.birthday.dto.UserDto;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.service.UserService;
@@ -8,13 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
 @SpringBootTest
+@Transactional
 public class UserServiceTest {
 
     @Autowired
@@ -35,21 +38,22 @@ public class UserServiceTest {
         assertTrue(passwordEncoder.matches(request.getPassword(), userDto.getPassword()));
     }
 
-//    @Test
-//    void 이메일_중복_검사_성공() {
-//        회원가입_성공();
-//        String email = "spring12@email.com";
-//
-//        assertDoesNotThrow(() ->  userService.checkifEmailExists(email));
-//    }
-//
-//    @Test
-//    void 이메일_중복_검사_실패() {
-//        회원가입_성공();
-//        String email = "spring@email.com";
-//
-//        assertThrows(EmailAlreadyExistsException.class, () -> userService.checkifEmailExists(email));
-//    }
+    @Test
+    void 이메일_중복_검사_성공() {
+        회원가입_시_비밀번호_암호화를_수행한다();
+        String email = "spring12@email.com";
+
+        assertDoesNotThrow(() ->  userService.checkIfEmailExists(email));
+    }
+
+    @Test
+    void 이메일_중복_검사_실패() {
+        회원가입_시_비밀번호_암호화를_수행한다();
+        String email = "spring@email.com";
+
+        AccountException accountException = assertThrows(AccountException.class, () -> userService.checkIfEmailExists(email));
+        assertEquals(accountException.getMessage(), AccountErrorCode.EMAIL_IS_EXITS.getMessage());
+    }
 //
 //    @Test
 //    void 유효성_검사_실패() {
