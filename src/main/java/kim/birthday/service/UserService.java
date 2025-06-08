@@ -1,0 +1,8 @@
+package kim.birthday.service;
+
+import kim.birthday.dto.UserDto;
+import kim.birthday.dto.request.SignupRequest;
+
+public interface UserService {
+    UserDto signup(SignupRequest request);
+}

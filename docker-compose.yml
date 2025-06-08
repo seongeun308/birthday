@@ -1,0 +1,11 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: birthday-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db/mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
