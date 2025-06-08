@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum AccountErrorCode {
+public enum AccountErrorCode implements ErrorCode {
     EMAIL_IS_EXITS(HttpStatus.CONFLICT, HttpStatus.CONFLICT.value(), "이미 존재하는 이메일입니다.")
     ;
 

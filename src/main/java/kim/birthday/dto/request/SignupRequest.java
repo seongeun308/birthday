@@ -15,9 +15,8 @@ public class SignupRequest {
     @NotBlank(message = "이메일은 필수값입니다.")
     private String email;
     @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()\\-_=+{};:,<.>]).{8,16}$",
+            regexp = "(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\\W)(?=\\S+$).{8,16}",
             message = "비밀번호는 8~16자로 영문자, 숫자, 특수문자를 포함해야 합니다."
     )
-    @NotBlank(message = "비밀번호는 필수값입니다.")
     private String password;
 }

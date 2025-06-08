@@ -26,14 +26,19 @@ public class Account {
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)
+    @Builder.Default
     private Role role = Role.USER;
     @Column(nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private final LocalDateTime createdAt = LocalDateTime.now();
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime lastActiveAt = LocalDateTime.now();
-    private LocalDateTime deleteRequestedAt;
+    @Builder.Default
+    private LocalDateTime deleteRequestedAt = null;
     @Column(nullable = false)
+    @Builder.Default
     private boolean isActive = true;
 }

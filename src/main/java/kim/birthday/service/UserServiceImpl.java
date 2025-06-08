@@ -30,12 +30,6 @@ public class UserServiceImpl implements UserService {
                 .publicId(PublicIdGenerator.generatePublicId())
                 .email(request.getEmail())
                 .password(encodedPassword)
-                .role(Role.USER)
-                .createdAt(now)
-                .deleteRequestedAt(null)
-                .isActive(true)
-                .lastActiveAt(now)
-                .updatedAt(now)
                 .build();
 
         Account savedAccount = accountRepository.save(account);

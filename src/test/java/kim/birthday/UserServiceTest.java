@@ -73,7 +73,7 @@ public class UserServiceTest {
 
         List<String> expectedMessages = List.of(
                 "이메일은 필수값입니다.",
-                "비밀번호는 필수값입니다."
+                "비밀번호는 8~16자로 영문자, 숫자, 특수문자를 포함해야 합니다."
         );
 
         List<String> actualMessages = violations.stream()
