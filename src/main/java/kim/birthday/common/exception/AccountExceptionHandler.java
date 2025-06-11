@@ -14,10 +14,11 @@ public class AccountExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<Api<Void>> handle(AccountException e) {
         AccountErrorCode errorCode = e.getErrorCode();
-        Api<Void> fail = Api.fail(errorCode);
+        Api<Void> api = Api.error(errorCode);
 
-        log.error("{}", fail);
+        log.error("{}", api);
 
-        return new ResponseEntity<>(fail, errorCode.getStatus());
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(api);
     }
 }

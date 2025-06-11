@@ -23,11 +23,12 @@ public class GlobalExceptionHandler {
                 .map(FieldErrorDetail::from)
                 .toList();
 
-        Api<Void> api = Api.fail(HttpStatus.BAD_REQUEST, errorDetails);
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        Api<Void> api = Api.error(status, errorDetails);
 
         log.error("{}", api);
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(status)
                 .body(api);
     }
 }

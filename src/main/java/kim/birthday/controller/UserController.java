@@ -21,7 +21,11 @@ public class UserController {
     public ResponseEntity<Api<Void>> signup(@Valid @RequestBody SignupRequest request) {
         userService.checkIfEmailExists(request.getEmail());
         userService.signup(request);
-        Api<Void> api = Api.success(HttpStatus.CREATED, null);
-        return new ResponseEntity<>(api, api.getStatus());
+
+        HttpStatus status = HttpStatus.CREATED;
+        Api<Void> api = Api.success(status, null);
+
+        return ResponseEntity.status(status)
+                .body(api);
     }
 }

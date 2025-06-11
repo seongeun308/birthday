@@ -11,40 +11,39 @@ import java.util.List;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Api<T> {
-    private final HttpStatus status;
-    private final int code;
+    private final int statusCode;
+    private final String internalCode;
     private final String message;
     private final List<FieldErrorDetail> errors;
     private final T data;
 
     public static <T> Api<T> success(HttpStatus httpStatus, T data) {
         return new Api<>(
-                httpStatus,
                 httpStatus.value(),
+                null,
                 "성공",
                 null,
                 data
         );
     }
 
-    public static <T> Api<T> fail(ErrorCode errorCode) {
+    public static <T> Api<T> error(ErrorCode errorCode) {
         return new Api<>(
-                errorCode.getStatus(),
-                errorCode.getCode(),
+                errorCode.getStatus().value(),
+                errorCode.getInternalCode(),
                 errorCode.getMessage(),
                 null,
                 null
         );
     }
 
-    public static <T> Api<T> fail(HttpStatus httpStatus, List<FieldErrorDetail> errors) {
+    public static <T> Api<T> error(HttpStatus httpStatus, List<FieldErrorDetail> errors) {
         return new Api<>(
-                httpStatus,
                 httpStatus.value(),
+                String.valueOf(httpStatus.value()),
                 "유효성 검사 실패",
                 errors,
                 null
         );
     }
-
 }
