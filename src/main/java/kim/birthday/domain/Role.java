@@ -1,5 +1,13 @@
 package kim.birthday.domain;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 public enum Role {
-    USER, ADMIN
+    USER,
+    ADMIN
+    ;
+
+    public SimpleGrantedAuthority toAuthority() {
+        return new SimpleGrantedAuthority("ROLE_" + this.name());
+    }
 }

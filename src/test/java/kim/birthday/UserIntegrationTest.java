@@ -47,7 +47,7 @@ public class UserIntegrationTest {
                     .content(objectMapper.writeValueAsString(request))
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value(HttpStatus.CREATED.value()))
+                .andExpect(jsonPath("$.statusCode").value(HttpStatus.CREATED.value()))
                 .andDo(document("signup/success",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
@@ -65,7 +65,7 @@ public class UserIntegrationTest {
                     .content(objectMapper.writeValueAsString(request))
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value(HttpStatus.CONFLICT.value()))
+                .andExpect(jsonPath("$.statusCode").value(HttpStatus.CONFLICT.value()))
                 .andExpect(jsonPath("$.message").value(AccountErrorCode.EMAIL_IS_EXITS.getMessage()))
                 .andDo(document("signup/email-is-exists",
                         preprocessRequest(prettyPrint()),
@@ -85,7 +85,7 @@ public class UserIntegrationTest {
                     .content(objectMapper.writeValueAsString(request))
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.errors", hasSize(2)))
                 .andExpect(jsonPath("$.errors[*].field", hasItem("email")))
                 .andExpect(jsonPath("$.errors[*].field", hasItem("password")))
@@ -107,7 +107,7 @@ public class UserIntegrationTest {
                     .content(objectMapper.writeValueAsString(request))
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(HttpStatus.BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.errors", hasSize(2)))
                 .andExpect(jsonPath("$.errors[*].field", hasItem("email")))
                 .andExpect(jsonPath("$.errors[*].field", hasItem("password")))

@@ -14,3 +14,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+jwt:
+  secret_key: Y2hlZXNlYnVyZ2VyaXNiZXN0IQ==NlYnVyZ2VyaXNiZXN0IQ
+  expiration-minutes: 15
+  expiration-days: 7

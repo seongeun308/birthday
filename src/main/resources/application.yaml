@@ -17,6 +17,6 @@ spring:
         format_sql: true
 
 jwt:
-  secret_key: Y2hlZXNlYnVyZ2VyaXNiZXN0IQ==
+  secret_key: Y2hlZXNlYnVyZ2VyaXNiZXN0IQ==NlYnVyZ2VyaXNiZXN0IQ
   expiration-minutes: 15
   expiration-days: 7
