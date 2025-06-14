@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import kim.birthday.common.api.Api;
 import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.common.error.ErrorCode;
+import kim.birthday.common.exception.AuthException;
+import kim.birthday.common.exception.DefaultException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,14 +19,15 @@ import java.io.IOException;
 
 @Component
 @Slf4j
-public class EmailPasswordAuthenticationFailureHandler implements AuthenticationFailureHandler {
+public class JwtAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
     @Override
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
 
-        ErrorCode errorCode = mapExceptionToErrorCode(exception);
+        DefaultException authException = (DefaultException) exception;
+        ErrorCode errorCode = authException.getErrorCode();
 
         response.setStatus(errorCode.getStatus().value());
         response.setContentType("application/json");
@@ -37,9 +40,4 @@ public class EmailPasswordAuthenticationFailureHandler implements Authentication
         new ObjectMapper().writeValue(response.getWriter(), api);
     }
 
-    private ErrorCode mapExceptionToErrorCode(AuthenticationException e) {
-        if (e instanceof BadCredentialsException) return AuthErrorCode.INVALID_CREDENTIALS;
-        if (e instanceof AuthenticationServiceException) return AuthErrorCode.INVALID_REQUEST;
-        return AuthErrorCode.UNKNOWN_ERROR;
-    }
 }

@@ -77,4 +77,12 @@ public class JwtProvider {
             throw new TokenException(TokenErrorCode.PARSE_ERROR);
         }
     }
+
+    public Claims getPayload(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
 }
