@@ -3,6 +3,7 @@ package kim.birthday.common.config;
 import kim.birthday.repository.AccountRepository;
 import kim.birthday.security.converter.EmailPasswordAuthenticationConverter;
 import kim.birthday.security.handler.EmailPasswordAuthenticationFailureHandler;
+import kim.birthday.security.handler.EmailPasswordAuthenticationSuccessHandler;
 import kim.birthday.security.provider.EmailPasswordAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ public class SecurityConfig{
 
     private final EmailPasswordAuthenticationConverter converter;
     private final EmailPasswordAuthenticationFailureHandler failureHandler;
+    private final EmailPasswordAuthenticationSuccessHandler successHandler;
     private final AccountRepository accountRepository;
 
     @Bean
@@ -49,7 +51,8 @@ public class SecurityConfig{
 
         AuthenticationFilter authFilter = new AuthenticationFilter(authenticationManager, converter);
         authFilter.setFailureHandler(failureHandler);
-        authFilter.setRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/login"));
+        authFilter.setSuccessHandler(successHandler);
+        authFilter.setRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/login"));
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)

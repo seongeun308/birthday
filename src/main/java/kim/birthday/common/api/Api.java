@@ -29,6 +29,16 @@ public class Api<T> {
         );
     }
 
+    public static <T> Api<T> success(T data) {
+        return new Api<>(
+                HttpStatus.OK.value(),
+                null,
+                "성공",
+                null,
+                data
+        );
+    }
+
     public static <T> Api<T> error(ErrorCode errorCode) {
         return new Api<>(
                 errorCode.getStatus().value(),

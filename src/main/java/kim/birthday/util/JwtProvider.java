@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Map;
 
@@ -26,16 +27,38 @@ public class JwtProvider {
             @Value("${jwt.expiration-days}") int days
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
-        this.accessExpiresIn = minutes * 60 * 1000;
-        this.refreshExpiresIn = days * 24 * 60 * 60 * 1000;
+        this.accessExpiresIn = minutes * 60;
+        this.refreshExpiresIn = days * 24 * 60 * 60;
     }
 
     public TokenDto generateAccessToken(final String publicId, final Map<String, Object> claims) {
-        return generateToken(publicId, claims, TokenType.ACCESS);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime plusSeconds = now.plusSeconds(accessExpiresIn);
+        Date expiration = DateConverter.toDate(plusSeconds);
+
+        String token = Jwts.builder()
+                .signWith(secretKey)
+                .issuedAt(DateConverter.toDate(now))
+                .expiration(expiration)
+                .subject(publicId)
+                .claims(claims)
+                .compact();
+
+        return new TokenDto(token, plusSeconds.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     }
 
-    public TokenDto generateRefreshToken(final String publicId, final Map<String, Object> claims) {
-        return generateToken(publicId, claims, TokenType.REFRESH);
+    public TokenDto generateRefreshToken() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime plusSeconds = now.plusSeconds(refreshExpiresIn);
+        Date expiration = DateConverter.toDate(plusSeconds);
+
+        String token = Jwts.builder()
+                .signWith(secretKey)
+                .issuedAt(DateConverter.toDate(now))
+                .expiration(expiration)
+                .compact();
+
+        return new TokenDto(token, plusSeconds.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
     }
 
     public void validateToken(String token) {
@@ -53,25 +76,5 @@ public class JwtProvider {
         } catch (JwtException ignored) {
             throw new TokenException(TokenErrorCode.PARSE_ERROR);
         }
-    }
-
-    private TokenDto generateToken(final String publicId, final Map<String, Object> claims, final TokenType type) {
-        LocalDateTime now = LocalDateTime.now();
-        int expiresIn = (type == TokenType.ACCESS) ? accessExpiresIn : refreshExpiresIn;
-        Date expiration = DateConverter.toDate(now.plusSeconds(expiresIn));
-
-        String token = Jwts.builder()
-                .signWith(secretKey)
-                .issuedAt(DateConverter.toDate(now))
-                .expiration(expiration)
-                .subject(publicId)
-                .claims(claims)
-                .compact();
-
-        return new TokenDto(token, expiration.toString());
-    }
-
-    private enum TokenType {
-        ACCESS, REFRESH
     }
 }
