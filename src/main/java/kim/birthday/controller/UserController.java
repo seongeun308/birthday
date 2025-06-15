@@ -12,7 +12,6 @@ import kim.birthday.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,6 +24,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+
 public class UserController {
 
     private final UserService userService;
@@ -39,10 +39,8 @@ public class UserController {
         userService.checkIfEmailExists(request.getEmail());
         userService.signup(request);
 
-        HttpStatus status = HttpStatus.CREATED;
-        Api<Void> api = Api.success(status, null);
-
-        return ResponseEntity.status(status)
+        Api<Void> api = Api.created();
+        return ResponseEntity.status(api.getStatusCode())
                 .body(api);
     }
 
@@ -54,7 +52,7 @@ public class UserController {
         refreshTokenService.add(account.getId(), refreshTokenDto);
 
         LoginResponse loginResponse = new LoginResponse(accessTokenDto.getToken(), accessTokenDto.getExpiresAt());
-        Api<LoginResponse> api = Api.success(loginResponse);
+        Api<LoginResponse> api = Api.ok(loginResponse);
         ResponseCookie refreshTokenCookie = createHttpOnlyCookie(refreshTokenDto.getToken());
 
         return ResponseEntity
@@ -72,5 +70,11 @@ public class UserController {
                 .path("/refresh")
                 .maxAge(Duration.ofDays(days))
                 .build();
+    }
+
+    @PostMapping("/password/verify")
+    public ResponseEntity<Api<Void>> verifyPassword (@AuthenticationPrincipal Long userId, @RequestBody String password) {
+        userService.isMatchPassword(userId, password);
+        return ResponseEntity.ok(Api.ok());
     }
 }

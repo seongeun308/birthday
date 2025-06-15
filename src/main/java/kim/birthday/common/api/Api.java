@@ -19,9 +19,19 @@ public class Api<T> {
     private final List<FieldErrorDetail> errors;
     private final T data;
 
-    public static <T> Api<T> success(HttpStatus httpStatus, T data) {
+    public static <T> Api<T> created() {
         return new Api<>(
-                httpStatus.value(),
+                HttpStatus.CREATED.value(),
+                null,
+                "성공",
+                null,
+                null
+        );
+    }
+
+    public static <T> Api<T> created(T data) {
+        return new Api<>(
+                HttpStatus.CREATED.value(),
                 null,
                 "성공",
                 null,
@@ -29,7 +39,17 @@ public class Api<T> {
         );
     }
 
-    public static <T> Api<T> success(T data) {
+    public static <T> Api<T> ok() {
+        return new Api<>(
+                HttpStatus.OK.value(),
+                null,
+                "성공",
+                null,
+                null
+        );
+    }
+
+    public static <T> Api<T> ok(T data) {
         return new Api<>(
                 HttpStatus.OK.value(),
                 null,

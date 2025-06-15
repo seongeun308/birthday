@@ -19,7 +19,7 @@ public class JwtAuthenticationConverter implements AuthenticationConverter {
         String header = request.getHeader(HEADER_STRING);
 
         if (header == null || !header.startsWith(PREFIX))
-            throw new TokenException(TokenErrorCode.PARSE_ERROR);
+            throw new TokenException(TokenErrorCode.MISSING_TOKEN);
 
         String token = header.substring(PREFIX.length());
         return new JwtAuthenticationToken(token);
