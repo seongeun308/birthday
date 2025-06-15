@@ -7,4 +7,6 @@ public interface UserService {
     UserDto signup(SignupRequest request);
 
     void checkIfEmailExists(String email);
+
+    void isMatchPassword(long userId, String rowPassword);
 }

@@ -4,7 +4,9 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import kim.birthday.common.error.AccountErrorCode;
+import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.common.exception.AccountException;
+import kim.birthday.common.exception.AuthException;
 import kim.birthday.dto.UserDto;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.service.UserService;
@@ -107,20 +109,28 @@ public class UserServiceTest {
         assertFalse(violations.isEmpty());
         assertTrue(actualMessages.containsAll(expectedMessages));
     }
-    
+
     @Test
     void 비밀번호_인증_성공() {
-        회원가입_시_비밀번호_암호화를_수행한다();
+        SignupRequest request = new SignupRequest();
+        request.setEmail(VALID_EMAIL);
+        request.setPassword(VALID_PASSWORD);
 
-        assertDoesNotThrow(() ->  userService.isMatchPassword(VALID_PASSWORD));
+        UserDto userDto = userService.signup(request);
+
+        assertDoesNotThrow(() -> userService.isMatchPassword(userDto.getUserId(), VALID_PASSWORD));
     }
 
     @Test
     void 비밀번호_인증_실패_시_예외를_던진다() {
-        회원가입_시_비밀번호_암호화를_수행한다();
+        SignupRequest request = new SignupRequest();
+        request.setEmail(VALID_EMAIL);
+        request.setPassword(VALID_PASSWORD);
 
-        AccountException e = assertThrows(AccountException.class, () -> userService.isMatchPassword(VALID_PASSWORD));
-        assertEquals(AccountErrorCode.MISMATCH_PASSWORD, e.getErrorCode());
+        UserDto userDto = userService.signup(request);
+
+        AuthException e = assertThrows(AuthException.class, () -> userService.isMatchPassword(userDto.getUserId(), "qwer14234!"));
+        assertEquals(AuthErrorCode.MISMATCH_PASSWORD, e.getErrorCode());
     }
 
 }
