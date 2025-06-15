@@ -20,6 +20,7 @@ spring:
       port: 6379
       password: ${REDIS_PASSWORD}
 
+# Todo : secret_key 변경 후 환경변수 처리
 jwt:
   secret_key: Y2hlZXNlYnVyZ2VyaXNiZXN0IQ==NlYnVyZ2VyaXNiZXN0IQ
   expiration-minutes: 15
