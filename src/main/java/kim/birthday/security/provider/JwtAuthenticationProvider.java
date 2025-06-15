@@ -1,8 +1,6 @@
 package kim.birthday.security.provider;
 
-import kim.birthday.common.error.AccountErrorCode;
 import kim.birthday.common.error.AuthErrorCode;
-import kim.birthday.common.exception.AccountException;
 import kim.birthday.common.exception.AuthException;
 import kim.birthday.domain.Account;
 import kim.birthday.repository.AccountRepository;
@@ -31,7 +29,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         Account account = accountRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.ACCOUNT_NOT_FOUND));
 
-        return new JwtAuthenticationToken(account, List.of(account.getRole().toAuthority()));
+        return new JwtAuthenticationToken(account.getId(), List.of(account.getRole().toAuthority()));
     }
 
     @Override

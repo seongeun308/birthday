@@ -30,12 +30,14 @@ public class UserServiceTest {
     private UserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    private final static String VALID_EMAIL = "spring@email.com";
+    private final static String VALID_PASSWORD = "spring123!";
 
     @Test
     void 회원가입_시_비밀번호_암호화를_수행한다() {
         SignupRequest request = new SignupRequest();
-        request.setEmail("spring@email.com");
-        request.setPassword("spring123!");
+        request.setEmail(VALID_EMAIL);
+        request.setPassword(VALID_PASSWORD);
 
         UserDto userDto = userService.signup(request);
 
@@ -55,9 +57,8 @@ public class UserServiceTest {
     @Test
     void 이메일_중복_검사_실패() {
         회원가입_시_비밀번호_암호화를_수행한다();
-        String email = "spring@email.com";
 
-        AccountException accountException = assertThrows(AccountException.class, () -> userService.checkIfEmailExists(email));
+        AccountException accountException = assertThrows(AccountException.class, () -> userService.checkIfEmailExists(VALID_EMAIL));
         assertEquals(accountException.getMessage(), AccountErrorCode.EMAIL_IS_EXITS.getMessage());
     }
 
@@ -106,4 +107,20 @@ public class UserServiceTest {
         assertFalse(violations.isEmpty());
         assertTrue(actualMessages.containsAll(expectedMessages));
     }
+    
+    @Test
+    void 비밀번호_인증_성공() {
+        회원가입_시_비밀번호_암호화를_수행한다();
+
+        assertDoesNotThrow(() ->  userService.isMatchPassword(VALID_PASSWORD));
+    }
+
+    @Test
+    void 비밀번호_인증_실패_시_예외를_던진다() {
+        회원가입_시_비밀번호_암호화를_수행한다();
+
+        AccountException e = assertThrows(AccountException.class, () -> userService.isMatchPassword(VALID_PASSWORD));
+        assertEquals(AccountErrorCode.MISMATCH_PASSWORD, e.getErrorCode());
+    }
+
 }
