@@ -15,6 +15,12 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD}
+
 jwt:
   secret_key: Y2hlZXNlYnVyZ2VyaXNiZXN0IQ==NlYnVyZ2VyaXNiZXN0IQ
   expiration-minutes: 15

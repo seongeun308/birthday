@@ -6,6 +6,8 @@ build/
 !**/src/test/**/build/
 .env
 /db/
+redis.conf
+/redis-data/
 
 ### STS ###
 .apt_generated

@@ -6,6 +6,7 @@ import kim.birthday.domain.Account;
 import kim.birthday.dto.TokenDto;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.dto.response.LoginResponse;
+import kim.birthday.service.RefreshTokenService;
 import kim.birthday.service.UserService;
 import kim.birthday.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class UserController {
 
     private final UserService userService;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
     @Value("${jwt.expiration-days}")
     private int days;
@@ -49,7 +51,7 @@ public class UserController {
         TokenDto accessTokenDto = jwtProvider.generateAccessToken(account.getPublicId(), Map.of("role", account.getRole()));
         TokenDto refreshTokenDto = jwtProvider.generateRefreshToken();
 
-        // Todo : RT DB 저장
+        refreshTokenService.add(account.getId(), refreshTokenDto);
 
         LoginResponse loginResponse = new LoginResponse(accessTokenDto.getToken(), accessTokenDto.getExpiresAt());
         Api<LoginResponse> api = Api.success(loginResponse);

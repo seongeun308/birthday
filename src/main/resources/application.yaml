@@ -14,7 +14,11 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        format_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD}
 
 jwt:
   secret_key: Y2hlZXNlYnVyZ2VyaXNiZXN0IQ==NlYnVyZ2VyaXNiZXN0IQ
