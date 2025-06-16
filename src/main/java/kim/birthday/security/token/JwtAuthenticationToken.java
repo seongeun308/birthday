@@ -1,6 +1,5 @@
 package kim.birthday.security.token;
 
-import kim.birthday.domain.Account;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 

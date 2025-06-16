@@ -30,7 +30,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         Account account = accountRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.ACCOUNT_NOT_FOUND));
 
-        AuthenticatedUser user = new AuthenticatedUser(account.getId(), account.getPublicId());
+        AuthenticatedUser user = new AuthenticatedUser(account.getId(), account.getPublicId(), account.getRole());
 
 
         return new JwtAuthenticationToken(user, List.of(account.getRole().toAuthority()));

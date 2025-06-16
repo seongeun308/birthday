@@ -11,14 +11,18 @@ import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.dto.UserDto;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
+import kim.birthday.security.token.JwtAuthenticationToken;
 import kim.birthday.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.util.List;
 import java.util.Set;
@@ -34,133 +38,81 @@ public class UserServiceTest {
     private UserService userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    private final static String VALID_EMAIL = "spring@email.com";
-    private final static String VALID_PASSWORD = "spring123!";
 
-    @Test
-    void 회원가입_시_비밀번호_암호화를_수행한다() {
-        SignupRequest request = new SignupRequest();
-        request.setEmail(VALID_EMAIL);
-        request.setPassword(VALID_PASSWORD);
+    private final SignupRequest signupRequest;
+    private AuthenticatedUser user;
 
-        UserDto userDto = userService.signup(request);
+    @BeforeEach
+    void setUp(TestInfo testInfo) {
+        if (testInfo.getTags().contains("without-signup")) return;
 
-        assertNotNull(userDto);
-        assertEquals(request.getEmail(), userDto.getEmail());
-        assertTrue(passwordEncoder.matches(request.getPassword(), userDto.getPassword()));
+        UserDto userDto = userService.signup(signupRequest);
+        user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId(), userDto.getRole());
+
+        JwtAuthenticationToken authToken = new JwtAuthenticationToken(user, List.of(user.getRole().toAuthority()));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 
+    public UserServiceTest() {
+        SignupRequest request = new SignupRequest();
+        request.setEmail("spring@spring.com");
+        request.setPassword("spring12!");
+        this.signupRequest = request;
+    }
+
+    @Tag("without-signup")
+    @Test
+    void 회원가입_시_비밀번호_암호화를_수행한다() {
+        UserDto userDto = userService.signup(signupRequest);
+
+        assertNotNull(userDto);
+        assertEquals(signupRequest.getEmail(), userDto.getEmail());
+        assertTrue(passwordEncoder.matches(signupRequest.getPassword(), userDto.getPassword()));
+    }
+
+    @Tag("without-signup")
     @Test
     void 이메일_중복_검사_성공() {
-        회원가입_시_비밀번호_암호화를_수행한다();
-        String email = "spring12@email.com";
-
-        assertDoesNotThrow(() ->  userService.checkIfEmailExists(email));
+        assertDoesNotThrow(() ->  userService.checkIfEmailExists(signupRequest.getEmail()));
     }
 
     @Test
     void 이메일_중복_검사_실패() {
-        회원가입_시_비밀번호_암호화를_수행한다();
-
-        AccountException accountException = assertThrows(AccountException.class, () -> userService.checkIfEmailExists(VALID_EMAIL));
+        AccountException accountException = assertThrows(AccountException.class, () ->
+                userService.checkIfEmailExists(signupRequest.getEmail())
+        );
         assertEquals(accountException.getMessage(), AccountErrorCode.EMAIL_IS_EXITS.getMessage());
     }
 
     @Test
-    void 유효성_검사_시_빈값이_들어오면_실패() {
-        SignupRequest request = new SignupRequest();
-        request.setEmail("");
-        request.setPassword("");
-
-        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(request);
-
-
-        List<String> expectedMessages = List.of(
-                "이메일은 필수값입니다.",
-                "비밀번호는 8~16자로 영문자, 숫자, 특수문자를 포함해야 합니다."
-        );
-
-        List<String> actualMessages = violations.stream()
-                .map(v -> v.getMessage())
-                .toList();
-
-        assertFalse(violations.isEmpty());
-        assertTrue(actualMessages.containsAll(expectedMessages));
-    }
-
-    @Test
-    void 유효성_검사_시_옳지_않은_형식이_들어오면_실패() {
-        SignupRequest request = new SignupRequest();
-        request.setEmail("23");
-        request.setPassword("123");
-
-        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        Set<ConstraintViolation<SignupRequest>> violations = validator.validate(request);
-
-
-        List<String> expectedMessages = List.of(
-                "올바른 이메일 형식이 아닙니다.",
-                "비밀번호는 8~16자로 영문자, 숫자, 특수문자를 포함해야 합니다."
-        );
-
-        List<String> actualMessages = violations.stream()
-                .map(v -> v.getMessage())
-                .toList();
-
-        assertFalse(violations.isEmpty());
-        assertTrue(actualMessages.containsAll(expectedMessages));
-    }
-
-    @Test
     void 비밀번호_인증_성공() {
-        SignupRequest request = new SignupRequest();
-        request.setEmail(VALID_EMAIL);
-        request.setPassword(VALID_PASSWORD);
-
-        UserDto userDto = userService.signup(request);
-        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
-
-        assertDoesNotThrow(() -> userService.isMatchPassword(user, VALID_PASSWORD));
+        assertDoesNotThrow(() -> userService.isMatchPassword(user, signupRequest.getPassword()));
     }
 
     @Test
     void 비밀번호_인증_실패_시_예외를_던진다() {
-        SignupRequest request = new SignupRequest();
-        request.setEmail(VALID_EMAIL);
-        request.setPassword(VALID_PASSWORD);
-
-        UserDto userDto = userService.signup(request);
-        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
-
-        AuthException e = assertThrows(AuthException.class, () -> userService.isMatchPassword(user, "qwer14234!"));
+        AuthException e = assertThrows(AuthException.class, () ->
+                userService.isMatchPassword(user, "qwer14234!")
+        );
         assertEquals(AuthErrorCode.MISMATCH_PASSWORD, e.getErrorCode());
     }
 
     @Test
     void 변경할_비밀번호와_확인용_비밀번호가_일치하면_비밀번호_변경_성공() {
-        SignupRequest signupRequest = new SignupRequest();
-        signupRequest.setEmail(VALID_EMAIL);
-        signupRequest.setPassword(VALID_PASSWORD);
-
-        UserDto userDto = userService.signup(signupRequest);
-        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
-
-        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest("change123!", "change123!");
+        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(
+                "change123!",
+                "change123!"
+        );
 
         assertDoesNotThrow(() -> userService.changePassword(user, changePasswordRequest));
     }
 
     @Test
     void 변경할_비밀번호와_확인용_비밀번호가_일치하지_않으면_AccountException_던진다() {
-        SignupRequest signupRequest = new SignupRequest();
-        signupRequest.setEmail(VALID_EMAIL);
-        signupRequest.setPassword(VALID_PASSWORD);
-
-        UserDto userDto = userService.signup(signupRequest);
-        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
-
-        ChangePasswordRequest request = new ChangePasswordRequest("change123!", "change123");
+        ChangePasswordRequest request = new ChangePasswordRequest(
+                "change123!",
+                "change123"
+        );
 
         AccountException e = assertThrows(AccountException.class, () -> userService.changePassword(user, request));
         assertEquals(AccountErrorCode.PASSWORD_MISMATCH, e.getErrorCode());

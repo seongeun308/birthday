@@ -5,6 +5,12 @@ import kim.birthday.dto.UserDto;
 
 public class AccountConverter {
     public static UserDto toUserDto(Account account) {
-        return new UserDto(account.getId(), account.getPublicId(), account.getEmail(), account.getPassword());
+        return new UserDto(
+                account.getId(),
+                account.getPublicId(),
+                account.getRole(),
+                account.getEmail(),
+                account.getPassword()
+        );
     }
 }

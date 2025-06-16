@@ -2,7 +2,6 @@ package kim.birthday.controller;
 
 import jakarta.validation.Valid;
 import kim.birthday.common.api.Api;
-import kim.birthday.domain.Account;
 import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.dto.TokenDto;
 import kim.birthday.dto.request.ChangePasswordRequest;
@@ -47,11 +46,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Api<LoginResponse>> login(@AuthenticationPrincipal Account account) {
-        TokenDto accessTokenDto = jwtProvider.generateAccessToken(account.getPublicId(), Map.of("role", account.getRole()));
+    public ResponseEntity<Api<LoginResponse>> login(@AuthenticationPrincipal AuthenticatedUser user) {
+        TokenDto accessTokenDto = jwtProvider.generateAccessToken(user.getPublicId(), Map.of("role", user.getRole()));
         TokenDto refreshTokenDto = jwtProvider.generateRefreshToken();
 
-        refreshTokenService.add(account.getId(), refreshTokenDto);
+        refreshTokenService.add(user.getUserId(), refreshTokenDto);
 
         LoginResponse loginResponse = new LoginResponse(accessTokenDto.getToken(), accessTokenDto.getExpiresAt());
         Api<LoginResponse> api = Api.ok(loginResponse);

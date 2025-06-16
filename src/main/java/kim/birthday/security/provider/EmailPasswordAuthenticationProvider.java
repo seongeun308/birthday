@@ -2,6 +2,7 @@ package kim.birthday.security.provider;
 
 import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.domain.Account;
+import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -33,9 +34,11 @@ public class EmailPasswordAuthenticationProvider implements AuthenticationProvid
             throw new BadCredentialsException(AuthErrorCode.INVALID_CREDENTIALS.getMessage());
         }
 
+        AuthenticatedUser user = new AuthenticatedUser(account.getId(), account.getPublicId(), account.getRole());
+
         // 인증 성공 → 인증된 Authentication 반환
         return new UsernamePasswordAuthenticationToken(
-            account, null, Collections.singleton(account.getRole().toAuthority())
+                user, null, Collections.singleton(account.getRole().toAuthority())
         );
     }
 
