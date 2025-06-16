@@ -1,4 +1,4 @@
-package kim.birthday.common.exception;
+package kim.birthday.common.exception.handler;
 
 import kim.birthday.common.api.Api;
 import kim.birthday.common.api.FieldErrorDetail;

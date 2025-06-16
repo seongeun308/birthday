@@ -1,4 +1,4 @@
-package kim.birthday;
+package kim.birthday.config;
 
 import kim.birthday.repository.AccountRepository;
 import kim.birthday.security.converter.EmailPasswordAuthenticationConverter;

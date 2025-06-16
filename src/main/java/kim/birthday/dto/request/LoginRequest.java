@@ -8,8 +8,8 @@ import lombok.ToString;
 @Getter
 @ToString
 public class LoginRequest {
-    private String email;
-    private String password;
+    private final String email;
+    private final String password;
 
     @JsonCreator
     public LoginRequest(

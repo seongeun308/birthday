@@ -2,18 +2,13 @@ spring:
   application:
     name: birthday
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${MYSQL_URL}
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
   jpa:
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    show-sql: true
+    open-in-view: false
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
   data:
     redis:
       host: localhost

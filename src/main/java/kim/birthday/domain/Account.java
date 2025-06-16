@@ -13,12 +13,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @NoArgsConstructor
-@Builder
 @AllArgsConstructor
+@Builder
 @Getter
-@Table(indexes = {
-        @Index(name = "idx_account_email", columnList = "email", unique = true)
-})
+@Table
 @EntityListeners(AuditingEntityListener.class)
 public class Account {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +32,7 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
     @CreatedDate
+    @Column(nullable = false)
     private LocalDateTime createdAt;
     @Column(nullable = false)
     @LastModifiedDate

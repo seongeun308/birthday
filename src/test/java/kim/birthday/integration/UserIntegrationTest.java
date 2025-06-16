@@ -1,4 +1,4 @@
-package kim.birthday;
+package kim.birthday.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kim.birthday.common.error.AccountErrorCode;
@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -178,12 +179,13 @@ public class UserIntegrationTest {
 
     @Test
     void 비밀번호_변경_성공_시_200_반환() throws Exception {
+        userService.verifyPassword(user.getUserId(), signupRequest.getPassword());
         ChangePasswordRequest request = new ChangePasswordRequest(
                 "spring123!!",
                 "spring123!!"
         );
 
-        mockMvc.perform(post("/password/change")
+        mockMvc.perform(patch("/account/password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
                 .accept(MediaType.APPLICATION_JSON))
@@ -194,13 +196,13 @@ public class UserIntegrationTest {
     }
 
     @Test
-    void 비밀번호_재확인_실패_시_400_반환() throws Exception {
+    void 비밀번호_확인_실패_시_400_반환() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest(
                 "spring123!!",
                 "spring123!"
         );
 
-        mockMvc.perform(post("/password/change")
+        mockMvc.perform(patch("/account/password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))
@@ -216,7 +218,7 @@ public class UserIntegrationTest {
     void 비밀번호_유효성_검사_실패_시_400_반환() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest("1!!", "1!!");
 
-        mockMvc.perform(post("/password/change")
+        mockMvc.perform(patch("/account/password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                         .accept(MediaType.APPLICATION_JSON))
@@ -230,7 +232,7 @@ public class UserIntegrationTest {
 
     @Test
     void 비밀번호_인증_성공_시_200_반환() throws Exception {
-        mockMvc.perform(post("/password/verify")
+        mockMvc.perform(post("/account/password/verify")
                         .contentType(MediaType.TEXT_PLAIN)
                         .content(signupRequest.getPassword())
                         .accept(MediaType.APPLICATION_JSON))
@@ -242,7 +244,7 @@ public class UserIntegrationTest {
 
     @Test
     void 비밀번호_인증_실패_시_401_반환() throws Exception {
-        mockMvc.perform(post("/password/verify")
+        mockMvc.perform(post("/account/password/verify")
                         .contentType(MediaType.TEXT_PLAIN)
                         .content("123")
                         .accept(MediaType.APPLICATION_JSON))

@@ -1,7 +1,8 @@
-package kim.birthday.common.exception;
+package kim.birthday.common.exception.handler;
 
 import kim.birthday.common.api.Api;
-import kim.birthday.common.error.AccountErrorCode;
+import kim.birthday.common.exception.AccountException;
+import kim.birthday.common.exception.ExceptionResponseBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,12 +14,6 @@ public class AccountExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<Api<Void>> handle(AccountException e) {
-        AccountErrorCode errorCode = e.getErrorCode();
-        Api<Void> api = Api.error(errorCode);
-
-        log.error("{}", api);
-
-        return ResponseEntity.status(errorCode.getStatus())
-                .body(api);
+        return ExceptionResponseBuilder.build(e);
     }
 }

@@ -10,7 +10,7 @@ public interface UserService {
 
     void checkIfEmailExists(String email);
 
-    void isMatchPassword(AuthenticatedUser user, String rowPassword);
+    void verifyPassword(Long userId, String rowPassword);
 
     void changePassword(AuthenticatedUser user, ChangePasswordRequest request);
 }

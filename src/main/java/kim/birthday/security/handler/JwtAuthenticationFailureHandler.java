@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kim.birthday.common.api.Api;
 import kim.birthday.common.error.ErrorCode;
-import kim.birthday.common.exception.DefaultException;
+import kim.birthday.common.exception.ErrorCoded;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -22,7 +22,7 @@ public class JwtAuthenticationFailureHandler implements AuthenticationFailureHan
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
 
-        DefaultException authException = (DefaultException) exception;
+        ErrorCoded authException = (ErrorCoded) exception;
         ErrorCode errorCode = authException.getErrorCode();
 
         response.setStatus(errorCode.getStatus().value());

@@ -1,8 +1,5 @@
-package kim.birthday;
+package kim.birthday.unit;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import kim.birthday.common.error.AccountErrorCode;
 import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.common.exception.AccountException;
@@ -25,7 +22,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -86,35 +82,35 @@ public class UserServiceTest {
 
     @Test
     void 비밀번호_인증_성공() {
-        assertDoesNotThrow(() -> userService.isMatchPassword(user, signupRequest.getPassword()));
+        assertDoesNotThrow(() -> userService.verifyPassword(user.getUserId(), signupRequest.getPassword()));
     }
 
     @Test
     void 비밀번호_인증_실패_시_예외를_던진다() {
         AuthException e = assertThrows(AuthException.class, () ->
-                userService.isMatchPassword(user, "qwer14234!")
+                userService.verifyPassword(user.getUserId(), "qwer14234!")
         );
         assertEquals(AuthErrorCode.MISMATCH_PASSWORD, e.getErrorCode());
     }
 
     @Test
-    void 변경할_비밀번호와_확인용_비밀번호가_일치하면_비밀번호_변경_성공() {
+    void 비밀번호_인증_수행_후_비밀번호_변경_시_성공() {
+        userService.verifyPassword(user.getUserId(), signupRequest.getPassword());
         ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest(
                 "change123!",
                 "change123!"
         );
-
         assertDoesNotThrow(() -> userService.changePassword(user, changePasswordRequest));
     }
 
     @Test
-    void 변경할_비밀번호와_확인용_비밀번호가_일치하지_않으면_AccountException_던진다() {
+    void 비밀번호_인증_수행_전_비밀번호_변경_시_실패() {
         ChangePasswordRequest request = new ChangePasswordRequest(
                 "change123!",
                 "change123"
         );
 
-        AccountException e = assertThrows(AccountException.class, () -> userService.changePassword(user, request));
-        assertEquals(AccountErrorCode.PASSWORD_MISMATCH, e.getErrorCode());
+        AuthException e = assertThrows(AuthException.class, () -> userService.changePassword(user, request));
+        assertEquals(AuthErrorCode.PASSWORD_NOT_VERIFIED, e.getErrorCode());
     }
 }

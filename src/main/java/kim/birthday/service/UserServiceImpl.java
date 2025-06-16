@@ -11,14 +11,13 @@ import kim.birthday.dto.UserDto;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.repository.AccountRepository;
+import kim.birthday.store.PasswordVerificationStore;
 import kim.birthday.util.PublicIdGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +27,12 @@ public class UserServiceImpl implements UserService {
 
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordVerificationStore passwordVerificationStore;
 
     @Override
     public UserDto signup(SignupRequest request) {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        LocalDateTime now = LocalDateTime.now();
         Account account = Account.builder()
                 .publicId(PublicIdGenerator.generatePublicId())
                 .email(request.getEmail())
@@ -42,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
         Account savedAccount = accountRepository.save(account);
 
-        // TODO: refactoring #1 account 저장 결과 로그 찍기
+        log.info("[회원가입] 사용자 [{}] 성공", savedAccount.getPublicId());
 
         return AccountConverter.toUserDto(savedAccount);
     }
@@ -54,29 +53,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void isMatchPassword(AuthenticatedUser user, String rowPassword) {
-        Account account = accountRepository.findById(user.getUserId())
-                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+    public void verifyPassword(Long userId, String rowPassword) {
+        Account account = getAccountById(userId);
 
         if (!passwordEncoder.matches(rowPassword, account.getPassword()))
             throw new AuthException(AuthErrorCode.MISMATCH_PASSWORD);
+
+        passwordVerificationStore.markVerified(userId);
+    }
+
+    private Account getAccountById(Long userId) {
+        return accountRepository.findById(userId)
+                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     @Override
     public void changePassword(AuthenticatedUser user, ChangePasswordRequest request) {
         log.info("[비밀번호변경] 사용자 [{}] 시도", user.getPublicId());
-        
-        // 비밀번호 비교
-        if (!request.isPasswordConfirmed()) {
-            log.warn("[비밀번호변경] 사용자 [{}] 실패 - 비밀번호 불일치", user.getPublicId());
-            throw new AccountException(AccountErrorCode.PASSWORD_MISMATCH);
-        }
-        // 비밀번호 수정
-        Account account = accountRepository.findById(user.getUserId())
-                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
 
+        passwordVerificationStore.verifyOrThrow(user.getUserId());
+
+        Account account = getAccountById(user.getUserId());
         account.changePassword(passwordEncoder.encode(request.getNewPassword()));
+
+        passwordVerificationStore.clear(user.getUserId());
 
         log.info("[비밀번호변경] 사용자 [{}] 성공", user.getPublicId());
     }
+
+
 }

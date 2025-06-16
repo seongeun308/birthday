@@ -2,14 +2,13 @@ package kim.birthday.common.exception;
 
 import kim.birthday.common.error.ErrorCode;
 import lombok.Getter;
-import org.springframework.security.core.AuthenticationException;
 
 @Getter
-public class TokenException extends AuthenticationException implements ErrorCoded {
+public abstract class BaseException extends RuntimeException implements ErrorCoded{
 
     private final ErrorCode errorCode;
 
-    public TokenException(ErrorCode errorCode) {
+    protected BaseException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
