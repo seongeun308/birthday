@@ -133,4 +133,18 @@ public class UserServiceTest {
         assertEquals(AuthErrorCode.MISMATCH_PASSWORD, e.getErrorCode());
     }
 
+    @Test
+    void 변경할_비밀번호와_확인용_비밀번호가_일치하면_비밀번호_변경_성공() {
+        ChangePasswordRequest request = new ChangePasswordRequest("change123!", "change123!");
+
+        assertDoesNotThrow(() -> userService.changePassword(request));
+    }
+
+    @Test
+    void 변경할_비밀번호와_확인용_비밀번호가_일치하지_않으면_AccountException_던진다() {
+        ChangePasswordRequest request = new ChangePasswordRequest("change123!", "change123");
+
+        AccountException e = assertThrows(AccountException.class, () -> userService.changePassword(request));
+        assertEquals(AccountErrorCode.PASSWORD_MISMATCH, e.getErrorCode());
+    }
 }
