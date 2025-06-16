@@ -11,6 +11,8 @@ import kim.birthday.security.handler.JwtAuthenticationFailureHandler;
 import kim.birthday.security.handler.JwtAuthenticationSuccessHandler;
 import kim.birthday.security.provider.EmailPasswordAuthenticationProvider;
 import kim.birthday.security.provider.JwtAuthenticationProvider;
+import kim.birthday.service.TokenBlacklistService;
+import kim.birthday.util.AuthenticationUserUtils;
 import kim.birthday.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -36,7 +38,7 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 @Profile("!test")
-public class SecurityConfig{
+public class SecurityConfig {
 
     private final EmailPasswordAuthenticationConverter converter;
     private final EmailPasswordAuthenticationFailureHandler failureHandler;
@@ -46,6 +48,8 @@ public class SecurityConfig{
     private final JwtAuthenticationFailureHandler jwtFailureHandler;
     private final JwtAuthenticationSuccessHandler jwtSuccessHandler;
     private final JwtProvider jwtProvider;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final AuthenticationUserUtils authenticationUserUtils;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -59,7 +63,7 @@ public class SecurityConfig{
 
     @Bean
     public JwtAuthenticationProvider jwtAuthenticationProvider() {
-        return new JwtAuthenticationProvider(jwtProvider, accountRepository);
+        return new JwtAuthenticationProvider(jwtProvider, tokenBlacklistService, authenticationUserUtils);
     }
 
     @Bean

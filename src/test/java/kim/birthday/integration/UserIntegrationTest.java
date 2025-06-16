@@ -74,9 +74,9 @@ public class UserIntegrationTest {
     @Test
     void 회원가입_성공() throws Exception {
         mockMvc.perform(post("/signup")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(signupRequest))
-                    .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(signupRequest))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.CREATED.value()))
                 .andDo(document("signup/success",
@@ -87,9 +87,9 @@ public class UserIntegrationTest {
     @Test
     void 이메일_중복으로_회원가입_실패() throws Exception {
         mockMvc.perform(post("/signup")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(signupRequest))
-                    .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(signupRequest))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.CONFLICT.value()))
                 .andExpect(jsonPath("$.message").value(AccountErrorCode.EMAIL_IS_EXITS.getMessage()))
@@ -106,9 +106,9 @@ public class UserIntegrationTest {
         request.setPassword("123");
 
         mockMvc.perform(post("/signup")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-                    .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.errors", hasSize(2)))
@@ -127,9 +127,9 @@ public class UserIntegrationTest {
         request.setPassword("");
 
         mockMvc.perform(post("/signup")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request))
-                    .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.statusCode").value(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(jsonPath("$.errors", hasSize(2)))
@@ -139,7 +139,7 @@ public class UserIntegrationTest {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }
-    
+
     @Test
     void 로그인_성공() throws Exception {
         LoginRequest loginRequest = new LoginRequest(
@@ -148,9 +148,9 @@ public class UserIntegrationTest {
         );
 
         mockMvc.perform(post("/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(loginRequest))
-                .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").exists())
                 .andExpect(jsonPath("$.data.expiresAt").exists())
@@ -159,7 +159,7 @@ public class UserIntegrationTest {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }
-    
+
     @Test
     void 사용자_인증_실패_시_로그인_실패() throws Exception {
         LoginRequest loginRequest = new LoginRequest("123", "123");
@@ -186,9 +186,9 @@ public class UserIntegrationTest {
         );
 
         mockMvc.perform(patch("/account/password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request))
-                .accept(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("change-password/success",
                         preprocessRequest(prettyPrint()),

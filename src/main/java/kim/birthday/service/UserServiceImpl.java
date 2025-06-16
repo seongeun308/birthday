@@ -80,6 +80,4 @@ public class UserServiceImpl implements UserService {
 
         log.info("[비밀번호변경] 사용자 [{}] 성공", user.getPublicId());
     }
-
-
 }

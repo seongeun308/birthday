@@ -1,11 +1,9 @@
 package kim.birthday.security.provider;
 
-import kim.birthday.common.error.AuthErrorCode;
-import kim.birthday.common.exception.AuthException;
-import kim.birthday.domain.Account;
 import kim.birthday.dto.AuthenticatedUser;
-import kim.birthday.repository.AccountRepository;
 import kim.birthday.security.token.JwtAuthenticationToken;
+import kim.birthday.service.TokenBlacklistService;
+import kim.birthday.util.AuthenticationUserUtils;
 import kim.birthday.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -18,22 +16,19 @@ import java.util.List;
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     private final JwtProvider jwtProvider;
-    private final AccountRepository accountRepository;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final AuthenticationUserUtils authenticationUserUtils;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String accessToken = authentication.getCredentials().toString();
 
         jwtProvider.validateToken(accessToken);
+        tokenBlacklistService.throwIfBlacklisted(accessToken);
 
         String publicId = jwtProvider.getPayload(accessToken).getSubject();
-        Account account = accountRepository.findByPublicId(publicId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.ACCOUNT_NOT_FOUND));
-
-        AuthenticatedUser user = new AuthenticatedUser(account.getId(), account.getPublicId(), account.getRole());
-
-
-        return new JwtAuthenticationToken(user, List.of(account.getRole().toAuthority()));
+        AuthenticatedUser user = authenticationUserUtils.getAuthenticatedUserByPublicId(publicId);
+        return new JwtAuthenticationToken(user, List.of(user.getRole().toAuthority()));
     }
 
     @Override

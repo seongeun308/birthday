@@ -1,17 +1,22 @@
 package kim.birthday.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import kim.birthday.common.api.Api;
 import kim.birthday.common.error.AccountErrorCode;
 import kim.birthday.common.exception.AccountException;
 import kim.birthday.dto.AuthenticatedUser;
-import kim.birthday.dto.TokenDto;
 import kim.birthday.dto.TokenPair;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.dto.response.LoginResponse;
-import kim.birthday.service.TokenService;
+import kim.birthday.dto.response.ReissueResponse;
+import kim.birthday.service.TokenBlacklistService;
+import kim.birthday.service.TokenIssueService;
 import kim.birthday.service.UserService;
+import kim.birthday.util.AuthenticationUserUtils;
+import kim.birthday.util.JwtProvider;
+import kim.birthday.util.TokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,16 +30,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
 
     private final UserService userService;
-    private final TokenService tokenService;
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+    private final TokenIssueService tokenIssueService;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final JwtProvider jwtProvider;
+    private final AuthenticationUserUtils authenticationUserUtils;
+
     @Value("${jwt.expiration-days}")
     private int days;
 
@@ -49,31 +55,19 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Api<LoginResponse>> login(@AuthenticationPrincipal AuthenticatedUser user) {
-        TokenPair tokenPair = tokenService.issueTokens(user);
+        TokenPair tokenPair = tokenIssueService.issueTokens(user);
 
-        TokenDto accessToken = tokenPair.getAccessToken();
-        TokenDto refreshToken = tokenPair.getRefreshToken();
-
-        LoginResponse loginResponse = new LoginResponse(accessToken.getToken(), accessToken.getExpiresAt());
-        ResponseCookie refreshTokenCookie = createHttpOnlyCookie(refreshToken.getToken());
+        LoginResponse loginResponse = new LoginResponse(tokenPair.getAccessToken());
+        ResponseCookie refreshTokenCookie = TokenUtils.createHttpOnlyCookie(tokenPair.getRefreshToken().getToken(), days);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(Api.ok(loginResponse));
     }
 
-    private ResponseCookie createHttpOnlyCookie(String refreshToken) {
-        return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
-                .httpOnly(true)
-                .secure(false)  // Todo : 배포 시 .secure(true)로 변경
-                .sameSite("Strict")
-                .path("/reissue")
-                .maxAge(Duration.ofDays(days))
-                .build();
-    }
 
     @PostMapping("/account/password/verify")
-    public ResponseEntity<Api<Void>> verifyPassword (
+    public ResponseEntity<Api<Void>> verifyPassword(
             @AuthenticationPrincipal AuthenticatedUser user,
             @RequestBody String password
     ) {
@@ -82,7 +76,7 @@ public class UserController {
     }
 
     @PatchMapping("/account/password")
-    public ResponseEntity<Api<Void>> changePassword (
+    public ResponseEntity<Api<Void>> changePassword(
             @AuthenticationPrincipal AuthenticatedUser user,
             @Valid @RequestBody ChangePasswordRequest request
     ) {
@@ -96,5 +90,24 @@ public class UserController {
             log.warn("[비밀번호변경] 사용자 [{}] 실패 - 비밀번호 불일치", publicId);
             throw new AccountException(AccountErrorCode.PASSWORD_MISMATCH);
         }
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<Api<ReissueResponse>> reissue(HttpServletRequest request) {
+        String refreshToken = TokenUtils.extractRefreshToken(request);
+        String accessToken = TokenUtils.extractAccessToken(request);
+
+        tokenBlacklistService.blacklistAccessToken(accessToken);
+
+        String publicId = jwtProvider.getPayload(accessToken).getSubject();
+        AuthenticatedUser user = authenticationUserUtils.getAuthenticatedUserByPublicId(publicId);
+        TokenPair tokenPair = tokenIssueService.reissueTokens(user, refreshToken);
+
+        ReissueResponse reissueResponse = new ReissueResponse(tokenPair.getAccessToken());
+        ResponseCookie refreshTokenCookie = TokenUtils.createHttpOnlyCookie(tokenPair.getRefreshToken().getToken(), days);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .body(Api.ok(reissueResponse));
     }
 }

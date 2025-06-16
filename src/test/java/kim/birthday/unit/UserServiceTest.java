@@ -69,7 +69,7 @@ public class UserServiceTest {
     @Tag("without-signup")
     @Test
     void 이메일_중복_검사_성공() {
-        assertDoesNotThrow(() ->  userService.checkIfEmailExists(signupRequest.getEmail()));
+        assertDoesNotThrow(() -> userService.checkIfEmailExists(signupRequest.getEmail()));
     }
 
     @Test

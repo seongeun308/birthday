@@ -4,7 +4,7 @@ import kim.birthday.common.error.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public abstract class BaseException extends RuntimeException implements ErrorCoded{
+public abstract class BaseException extends RuntimeException implements ErrorCoded {
 
     private final ErrorCode errorCode;
 

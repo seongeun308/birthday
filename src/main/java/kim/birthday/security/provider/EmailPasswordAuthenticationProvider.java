@@ -27,7 +27,7 @@ public class EmailPasswordAuthenticationProvider implements AuthenticationProvid
 
         // 사용자 인증 로직
         Account account = accountRepository.findByEmail(email)
-            .orElseThrow(() -> new BadCredentialsException(""));
+                .orElseThrow(() -> new BadCredentialsException(""));
 
         // 인증 실패
         if (!passwordEncoder.matches(password, account.getPassword())) {

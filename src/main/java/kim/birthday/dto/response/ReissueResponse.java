@@ -8,11 +8,11 @@ import lombok.ToString;
 @Getter
 @ToString
 @AllArgsConstructor
-public class LoginResponse {
+public class ReissueResponse {
     private String accessToken;
     private String expiresAt;
 
-    public LoginResponse(TokenDto accessTokenDto) {
+    public ReissueResponse(TokenDto accessTokenDto) {
         this.accessToken = accessTokenDto.getToken();
         this.expiresAt = accessTokenDto.getExpiresAt();
     }

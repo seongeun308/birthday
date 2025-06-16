@@ -24,7 +24,7 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 @Profile("test")
 @Configuration
 @RequiredArgsConstructor
-public class TestSecurityConfig{
+public class TestSecurityConfig {
 
     private final EmailPasswordAuthenticationConverter converter;
     private final EmailPasswordAuthenticationFailureHandler failureHandler;

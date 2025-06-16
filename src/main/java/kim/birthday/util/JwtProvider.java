@@ -2,6 +2,7 @@ package kim.birthday.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import kim.birthday.common.converter.LocalDateTimeConverter;
 import kim.birthday.common.error.TokenErrorCode;
 import kim.birthday.common.exception.TokenException;
 import kim.birthday.dto.TokenDto;
@@ -34,11 +35,11 @@ public class JwtProvider {
     public TokenDto generateAccessToken(final String publicId, final Map<String, Object> claims) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime plusSeconds = now.plusSeconds(accessExpiresIn);
-        Date expiration = DateConverter.toDate(plusSeconds);
+        Date expiration = LocalDateTimeConverter.toDate(plusSeconds);
 
         String token = Jwts.builder()
                 .signWith(secretKey)
-                .issuedAt(DateConverter.toDate(now))
+                .issuedAt(LocalDateTimeConverter.toDate(now))
                 .expiration(expiration)
                 .subject(publicId)
                 .claims(claims)
@@ -50,11 +51,11 @@ public class JwtProvider {
     public TokenDto generateRefreshToken() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime plusSeconds = now.plusSeconds(refreshExpiresIn);
-        Date expiration = DateConverter.toDate(plusSeconds);
+        Date expiration = LocalDateTimeConverter.toDate(plusSeconds);
 
         String token = Jwts.builder()
                 .signWith(secretKey)
-                .issuedAt(DateConverter.toDate(now))
+                .issuedAt(LocalDateTimeConverter.toDate(now))
                 .expiration(expiration)
                 .compact();
 
@@ -62,7 +63,7 @@ public class JwtProvider {
     }
 
     public void validateToken(String token) {
-        try{
+        try {
             Jwts.parser()
                     .verifyWith(secretKey)
                     .build()

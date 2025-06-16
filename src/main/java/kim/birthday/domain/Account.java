@@ -19,7 +19,8 @@ import java.time.LocalDateTime;
 @Table
 @EntityListeners(AuditingEntityListener.class)
 public class Account {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true)
     private String publicId;
