@@ -3,6 +3,7 @@ package kim.birthday.controller;
 import jakarta.validation.Valid;
 import kim.birthday.common.api.Api;
 import kim.birthday.domain.Account;
+import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.dto.TokenDto;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.dto.response.LoginResponse;
@@ -73,8 +74,11 @@ public class UserController {
     }
 
     @PostMapping("/password/verify")
-    public ResponseEntity<Api<Void>> verifyPassword (@AuthenticationPrincipal Long userId, @RequestBody String password) {
-        userService.isMatchPassword(userId, password);
+    public ResponseEntity<Api<Void>> verifyPassword (
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @RequestBody String password
+    ) {
+        userService.isMatchPassword(user, password);
         return ResponseEntity.ok(Api.ok());
     }
 }

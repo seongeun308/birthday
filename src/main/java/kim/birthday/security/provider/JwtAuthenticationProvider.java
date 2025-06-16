@@ -3,6 +3,7 @@ package kim.birthday.security.provider;
 import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.common.exception.AuthException;
 import kim.birthday.domain.Account;
+import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.repository.AccountRepository;
 import kim.birthday.security.token.JwtAuthenticationToken;
 import kim.birthday.util.JwtProvider;
@@ -29,7 +30,10 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         Account account = accountRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.ACCOUNT_NOT_FOUND));
 
-        return new JwtAuthenticationToken(account.getId(), List.of(account.getRole().toAuthority()));
+        AuthenticatedUser user = new AuthenticatedUser(account.getId(), account.getPublicId());
+
+
+        return new JwtAuthenticationToken(user, List.of(account.getRole().toAuthority()));
     }
 
     @Override

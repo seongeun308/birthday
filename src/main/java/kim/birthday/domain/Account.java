@@ -41,4 +41,8 @@ public class Account {
     @Column(nullable = false)
     @Builder.Default
     private boolean isActive = true;
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
 }

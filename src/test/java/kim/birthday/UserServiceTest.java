@@ -7,7 +7,9 @@ import kim.birthday.common.error.AccountErrorCode;
 import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.common.exception.AccountException;
 import kim.birthday.common.exception.AuthException;
+import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.dto.UserDto;
+import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -117,8 +119,9 @@ public class UserServiceTest {
         request.setPassword(VALID_PASSWORD);
 
         UserDto userDto = userService.signup(request);
+        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
 
-        assertDoesNotThrow(() -> userService.isMatchPassword(userDto.getUserId(), VALID_PASSWORD));
+        assertDoesNotThrow(() -> userService.isMatchPassword(user, VALID_PASSWORD));
     }
 
     @Test
@@ -128,23 +131,38 @@ public class UserServiceTest {
         request.setPassword(VALID_PASSWORD);
 
         UserDto userDto = userService.signup(request);
+        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
 
-        AuthException e = assertThrows(AuthException.class, () -> userService.isMatchPassword(userDto.getUserId(), "qwer14234!"));
+        AuthException e = assertThrows(AuthException.class, () -> userService.isMatchPassword(user, "qwer14234!"));
         assertEquals(AuthErrorCode.MISMATCH_PASSWORD, e.getErrorCode());
     }
 
     @Test
     void 변경할_비밀번호와_확인용_비밀번호가_일치하면_비밀번호_변경_성공() {
-        ChangePasswordRequest request = new ChangePasswordRequest("change123!", "change123!");
+        SignupRequest signupRequest = new SignupRequest();
+        signupRequest.setEmail(VALID_EMAIL);
+        signupRequest.setPassword(VALID_PASSWORD);
 
-        assertDoesNotThrow(() -> userService.changePassword(request));
+        UserDto userDto = userService.signup(signupRequest);
+        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
+
+        ChangePasswordRequest changePasswordRequest = new ChangePasswordRequest("change123!", "change123!");
+
+        assertDoesNotThrow(() -> userService.changePassword(user, changePasswordRequest));
     }
 
     @Test
     void 변경할_비밀번호와_확인용_비밀번호가_일치하지_않으면_AccountException_던진다() {
+        SignupRequest signupRequest = new SignupRequest();
+        signupRequest.setEmail(VALID_EMAIL);
+        signupRequest.setPassword(VALID_PASSWORD);
+
+        UserDto userDto = userService.signup(signupRequest);
+        AuthenticatedUser user = new AuthenticatedUser(userDto.getUserId(), userDto.getPublicId());
+
         ChangePasswordRequest request = new ChangePasswordRequest("change123!", "change123");
 
-        AccountException e = assertThrows(AccountException.class, () -> userService.changePassword(request));
+        AccountException e = assertThrows(AccountException.class, () -> userService.changePassword(user, request));
         assertEquals(AccountErrorCode.PASSWORD_MISMATCH, e.getErrorCode());
     }
 }
