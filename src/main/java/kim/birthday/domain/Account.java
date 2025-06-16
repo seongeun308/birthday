@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +19,7 @@ import java.time.LocalDateTime;
 @Table(indexes = {
         @Index(name = "idx_account_email", columnList = "email", unique = true)
 })
+@EntityListeners(AuditingEntityListener.class)
 public class Account {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,12 +31,13 @@ public class Account {
     private String password;
     @Column(nullable = false)
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
+    @CreatedDate
+    private LocalDateTime createdAt;
     @Column(nullable = false)
-    private final LocalDateTime createdAt = LocalDateTime.now();
-    @Column(nullable = false)
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
     @Column(nullable = false)
     @Builder.Default
     private LocalDateTime lastActiveAt = LocalDateTime.now();

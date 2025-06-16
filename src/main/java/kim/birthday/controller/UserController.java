@@ -5,6 +5,7 @@ import kim.birthday.common.api.Api;
 import kim.birthday.domain.Account;
 import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.dto.TokenDto;
+import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.dto.response.LoginResponse;
 import kim.birthday.service.RefreshTokenService;
@@ -79,6 +80,15 @@ public class UserController {
             @RequestBody String password
     ) {
         userService.isMatchPassword(user, password);
+        return ResponseEntity.ok(Api.ok());
+    }
+
+    @PostMapping("/password/change")
+    public ResponseEntity<Api<Void>> changePassword (
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        userService.changePassword(user, request);
         return ResponseEntity.ok(Api.ok());
     }
 }
