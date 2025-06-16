@@ -227,4 +227,30 @@ public class UserIntegrationTest {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }
+
+    @Test
+    void 비밀번호_인증_성공_시_200_반환() throws Exception {
+        mockMvc.perform(post("/password/verify")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content(signupRequest.getPassword())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(document("password-verify/success",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    @Test
+    void 비밀번호_인증_실패_시_401_반환() throws Exception {
+        mockMvc.perform(post("/password/verify")
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .content("123")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.internalCode").value(AuthErrorCode.MISMATCH_PASSWORD.getInternalCode()))
+                .andExpect(jsonPath("$.message").value(AuthErrorCode.MISMATCH_PASSWORD.getMessage()))
+                .andDo(document("password-verify/password-mismatch",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
 }
