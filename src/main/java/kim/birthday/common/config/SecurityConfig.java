@@ -11,7 +11,7 @@ import kim.birthday.security.handler.JwtAuthenticationFailureHandler;
 import kim.birthday.security.handler.JwtAuthenticationSuccessHandler;
 import kim.birthday.security.provider.EmailPasswordAuthenticationProvider;
 import kim.birthday.security.provider.JwtAuthenticationProvider;
-import kim.birthday.service.TokenBlacklistService;
+import kim.birthday.service.TokenValidationService;
 import kim.birthday.util.AuthenticationUserUtils;
 import kim.birthday.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFailureHandler jwtFailureHandler;
     private final JwtAuthenticationSuccessHandler jwtSuccessHandler;
     private final JwtProvider jwtProvider;
-    private final TokenBlacklistService tokenBlacklistService;
+    private final TokenValidationService tokenValidationService;
     private final AuthenticationUserUtils authenticationUserUtils;
 
     @Bean
@@ -63,7 +63,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationProvider jwtAuthenticationProvider() {
-        return new JwtAuthenticationProvider(jwtProvider, tokenBlacklistService, authenticationUserUtils);
+        return new JwtAuthenticationProvider(jwtProvider, tokenValidationService, authenticationUserUtils);
     }
 
     @Bean
@@ -79,13 +79,13 @@ public class SecurityConfig {
         authFilter.setSuccessHandler(successHandler);
         authFilter.setRequestMatcher(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/login"));
 
-
         JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(authenticationManager, jwtConverter);
         jwtFilter.setFailureHandler(jwtFailureHandler);
         jwtFilter.setSuccessHandler(jwtSuccessHandler);
         jwtFilter.setRequestMatcher(new NegatedRequestMatcher(new OrRequestMatcher(
                 PathPatternRequestMatcher.withDefaults().matcher("/login"),
-                PathPatternRequestMatcher.withDefaults().matcher("/signup")
+                PathPatternRequestMatcher.withDefaults().matcher("/signup"),
+                PathPatternRequestMatcher.withDefaults().matcher("/reissue")
         )));
 
         return http
@@ -95,7 +95,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 안함
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/signup").permitAll()
+                        .requestMatchers("/login", "/signup", "/reissue").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationManager(authenticationManager)

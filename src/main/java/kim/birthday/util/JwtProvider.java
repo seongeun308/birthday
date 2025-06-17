@@ -2,7 +2,6 @@ package kim.birthday.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import kim.birthday.common.converter.LocalDateTimeConverter;
 import kim.birthday.common.error.TokenErrorCode;
 import kim.birthday.common.exception.TokenException;
 import kim.birthday.dto.TokenDto;
@@ -35,11 +34,11 @@ public class JwtProvider {
     public TokenDto generateAccessToken(final String publicId, final Map<String, Object> claims) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime plusSeconds = now.plusSeconds(accessExpiresIn);
-        Date expiration = LocalDateTimeConverter.toDate(plusSeconds);
+        Date expiration = LocalDateTimeUtils.toDate(plusSeconds);
 
         String token = Jwts.builder()
                 .signWith(secretKey)
-                .issuedAt(LocalDateTimeConverter.toDate(now))
+                .issuedAt(LocalDateTimeUtils.toDate(now))
                 .expiration(expiration)
                 .subject(publicId)
                 .claims(claims)
@@ -51,11 +50,11 @@ public class JwtProvider {
     public TokenDto generateRefreshToken() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime plusSeconds = now.plusSeconds(refreshExpiresIn);
-        Date expiration = LocalDateTimeConverter.toDate(plusSeconds);
+        Date expiration = LocalDateTimeUtils.toDate(plusSeconds);
 
         String token = Jwts.builder()
                 .signWith(secretKey)
-                .issuedAt(LocalDateTimeConverter.toDate(now))
+                .issuedAt(LocalDateTimeUtils.toDate(now))
                 .expiration(expiration)
                 .compact();
 
@@ -63,11 +62,20 @@ public class JwtProvider {
     }
 
     public void validateToken(String token) {
+        parseToken(token);
+    }
+
+    public Claims getPayload(String token) {
+        return parseToken(token);
+    }
+
+    private Claims parseToken(String token) {
         try {
-            Jwts.parser()
+            return Jwts.parser()
                     .verifyWith(secretKey)
                     .build()
-                    .parseSignedClaims(token);
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (ExpiredJwtException ignored) {
             throw new TokenException(TokenErrorCode.EXPIRED);
         } catch (SecurityException ignored) {
@@ -77,13 +85,5 @@ public class JwtProvider {
         } catch (JwtException ignored) {
             throw new TokenException(TokenErrorCode.PARSE_ERROR);
         }
-    }
-
-    public Claims getPayload(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
     }
 }

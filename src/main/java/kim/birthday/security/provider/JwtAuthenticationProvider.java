@@ -2,7 +2,7 @@ package kim.birthday.security.provider;
 
 import kim.birthday.dto.AuthenticatedUser;
 import kim.birthday.security.token.JwtAuthenticationToken;
-import kim.birthday.service.TokenBlacklistService;
+import kim.birthday.service.TokenValidationService;
 import kim.birthday.util.AuthenticationUserUtils;
 import kim.birthday.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -16,17 +16,16 @@ import java.util.List;
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     private final JwtProvider jwtProvider;
-    private final TokenBlacklistService tokenBlacklistService;
+    private final TokenValidationService tokenValidationService;
     private final AuthenticationUserUtils authenticationUserUtils;
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String accessToken = authentication.getCredentials().toString();
-
-        jwtProvider.validateToken(accessToken);
-        tokenBlacklistService.throwIfBlacklisted(accessToken);
-
         String publicId = jwtProvider.getPayload(accessToken).getSubject();
+
+        tokenValidationService.validateAccessToken(accessToken);
+
         AuthenticatedUser user = authenticationUserUtils.getAuthenticatedUserByPublicId(publicId);
         return new JwtAuthenticationToken(user, List.of(user.getRole().toAuthority()));
     }

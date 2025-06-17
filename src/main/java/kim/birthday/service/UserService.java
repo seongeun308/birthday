@@ -1,6 +1,7 @@
 package kim.birthday.service;
 
 import kim.birthday.dto.AuthenticatedUser;
+import kim.birthday.dto.TokenPair;
 import kim.birthday.dto.UserDto;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
@@ -13,4 +14,8 @@ public interface UserService {
     void verifyPassword(Long userId, String rowPassword);
 
     void changePassword(AuthenticatedUser user, ChangePasswordRequest request);
+
+    TokenPair login(AuthenticatedUser user);
+
+    TokenPair reissueTokens(String accessToken, String refreshToken);
 }

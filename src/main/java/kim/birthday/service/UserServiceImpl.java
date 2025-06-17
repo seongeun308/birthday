@@ -7,17 +7,25 @@ import kim.birthday.common.exception.AccountException;
 import kim.birthday.common.exception.AuthException;
 import kim.birthday.domain.Account;
 import kim.birthday.dto.AuthenticatedUser;
+import kim.birthday.dto.TokenDto;
+import kim.birthday.dto.TokenPair;
 import kim.birthday.dto.UserDto;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.repository.AccountRepository;
 import kim.birthday.store.PasswordVerificationStore;
+import kim.birthday.util.AuthenticationUserUtils;
+import kim.birthday.util.JwtProvider;
+import kim.birthday.util.LocalDateTimeUtils;
 import kim.birthday.util.PublicIdGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +36,11 @@ public class UserServiceImpl implements UserService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordVerificationStore passwordVerificationStore;
+    private final TokenIssueService tokenIssueService;
+    private final TokenStoreService tokenStoreService;
+    private final TokenValidationService tokenValidationService;
+    private final JwtProvider jwtProvider;
+    private final AuthenticationUserUtils authenticationUserUtils;
 
     @Override
     public UserDto signup(SignupRequest request) {
@@ -79,5 +92,32 @@ public class UserServiceImpl implements UserService {
         passwordVerificationStore.clear(user.getUserId());
 
         log.info("[비밀번호변경] 사용자 [{}] 성공", user.getPublicId());
+    }
+
+    @Override
+    public TokenPair login(AuthenticatedUser user) {
+        TokenPair tokenPair = tokenIssueService.issueTokens(user);
+
+        TokenDto refreshToken = tokenPair.getRefreshToken();
+        LocalDateTime expiresAt = LocalDateTimeUtils.toLocalDateTime(refreshToken.getExpiresAt());
+
+        tokenStoreService.storeRefreshToken(user.getUserId(), refreshToken.getToken(), expiresAt);
+
+        return tokenPair;
+    }
+
+    @Override
+    public TokenPair reissueTokens(String accessToken, String refreshToken) {
+        String publicId = jwtProvider.getPayload(accessToken).getSubject();
+        AuthenticatedUser user = authenticationUserUtils.getAuthenticatedUserByPublicId(publicId);
+
+        tokenValidationService.validateRefreshToken(user.getUserId(), refreshToken);
+
+        Date expiration = jwtProvider.getPayload(accessToken).getExpiration();
+        tokenStoreService.blacklistAccessToken(accessToken, expiration);
+
+        tokenStoreService.deleteRefreshToken(user.getUserId());
+
+        return login(user);
     }
 }

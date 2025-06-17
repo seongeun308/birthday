@@ -11,11 +11,7 @@ import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.dto.response.LoginResponse;
 import kim.birthday.dto.response.ReissueResponse;
-import kim.birthday.service.TokenBlacklistService;
-import kim.birthday.service.TokenIssueService;
 import kim.birthday.service.UserService;
-import kim.birthday.util.AuthenticationUserUtils;
-import kim.birthday.util.JwtProvider;
 import kim.birthday.util.TokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-    private final TokenIssueService tokenIssueService;
-    private final TokenBlacklistService tokenBlacklistService;
-    private final JwtProvider jwtProvider;
-    private final AuthenticationUserUtils authenticationUserUtils;
 
     @Value("${jwt.expiration-days}")
     private int days;
@@ -55,7 +47,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<Api<LoginResponse>> login(@AuthenticationPrincipal AuthenticatedUser user) {
-        TokenPair tokenPair = tokenIssueService.issueTokens(user);
+        TokenPair tokenPair = userService.login(user);
 
         LoginResponse loginResponse = new LoginResponse(tokenPair.getAccessToken());
         ResponseCookie refreshTokenCookie = TokenUtils.createHttpOnlyCookie(tokenPair.getRefreshToken().getToken(), days);
@@ -94,14 +86,10 @@ public class UserController {
 
     @PostMapping("/reissue")
     public ResponseEntity<Api<ReissueResponse>> reissue(HttpServletRequest request) {
-        String refreshToken = TokenUtils.extractRefreshToken(request);
         String accessToken = TokenUtils.extractAccessToken(request);
+        String refreshToken = TokenUtils.extractRefreshToken(request);
 
-        tokenBlacklistService.blacklistAccessToken(accessToken);
-
-        String publicId = jwtProvider.getPayload(accessToken).getSubject();
-        AuthenticatedUser user = authenticationUserUtils.getAuthenticatedUserByPublicId(publicId);
-        TokenPair tokenPair = tokenIssueService.reissueTokens(user, refreshToken);
+        TokenPair tokenPair = userService.reissueTokens(accessToken, refreshToken);
 
         ReissueResponse reissueResponse = new ReissueResponse(tokenPair.getAccessToken());
         ResponseCookie refreshTokenCookie = TokenUtils.createHttpOnlyCookie(tokenPair.getRefreshToken().getToken(), days);
