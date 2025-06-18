@@ -6,10 +6,7 @@ import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.common.exception.AccountException;
 import kim.birthday.common.exception.AuthException;
 import kim.birthday.domain.Account;
-import kim.birthday.dto.AuthenticatedUser;
-import kim.birthday.dto.TokenDto;
-import kim.birthday.dto.TokenPair;
-import kim.birthday.dto.UserDto;
+import kim.birthday.dto.*;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
 import kim.birthday.repository.AccountRepository;
@@ -25,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -112,12 +108,15 @@ public class UserServiceImpl implements UserService {
         AuthenticatedUser user = authenticationUserUtils.getAuthenticatedUserByPublicId(publicId);
 
         tokenValidationService.validateRefreshToken(user.getUserId(), refreshToken);
-
-        Date expiration = jwtProvider.getPayload(accessToken).getExpiration();
-        tokenStoreService.blacklistAccessToken(accessToken, expiration);
-
+        tokenStoreService.blacklistAccessToken(accessToken);
         tokenStoreService.deleteRefreshToken(user.getUserId());
 
         return login(user);
+    }
+
+    @Override
+    public void logout(LoginSession loginSession) {
+        tokenStoreService.blacklistAccessToken(loginSession.accessToken());
+        tokenStoreService.deleteRefreshToken(loginSession.userId());
     }
 }

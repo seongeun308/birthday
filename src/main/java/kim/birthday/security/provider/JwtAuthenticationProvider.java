@@ -1,6 +1,7 @@
 package kim.birthday.security.provider;
 
 import kim.birthday.dto.AuthenticatedUser;
+import kim.birthday.dto.LoginSession;
 import kim.birthday.security.token.JwtAuthenticationToken;
 import kim.birthday.service.TokenValidationService;
 import kim.birthday.util.AuthenticationUserUtils;
@@ -27,7 +28,8 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         tokenValidationService.validateAccessToken(accessToken);
 
         AuthenticatedUser user = authenticationUserUtils.getAuthenticatedUserByPublicId(publicId);
-        return new JwtAuthenticationToken(user, List.of(user.getRole().toAuthority()));
+        LoginSession loginSession = new LoginSession(user, accessToken);
+        return new JwtAuthenticationToken(loginSession, List.of(user.getRole().toAuthority()));
     }
 
     @Override

@@ -6,6 +6,7 @@ import kim.birthday.common.exception.AuthException;
 import kim.birthday.common.exception.TokenException;
 import kim.birthday.domain.RefreshToken;
 import kim.birthday.store.RefreshTokenStore;
+import kim.birthday.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class TokenStoreService {
     private final RefreshTokenStore refreshTokenStore;
 
     private static final String BLACKLIST_PREFIX = "blacklist:";
+    private final JwtProvider jwtProvider;
 
     public void storeRefreshToken(Long userId, String refreshToken, LocalDateTime expiresAt) {
         RefreshToken token = new RefreshToken(userId, refreshToken, expiresAt);
@@ -44,9 +46,9 @@ public class TokenStoreService {
         refreshTokenStore.deleteById(userId);
     }
 
-    public void blacklistAccessToken(String accessToken, Date expiration) {
+    public void blacklistAccessToken(String accessToken) {
         long now = System.currentTimeMillis();
-        long expireAt = expiration.getTime();
+        long expireAt = jwtProvider.getPayload(accessToken).getExpiration().getTime();
         long ttlMillis = expireAt - now;
 
         if (ttlMillis > 0) {

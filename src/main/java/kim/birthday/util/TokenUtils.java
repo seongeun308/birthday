@@ -14,6 +14,8 @@ public class TokenUtils {
     private static final String HEADER_STRING = "Authorization";
     private static final String PREFIX = "Bearer ";
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+    private static final String SAME_SITE = "Strict";
+    private static final String PATH = "/reissue";
 
     public static String extractAccessToken(HttpServletRequest request) {
         String header = request.getHeader(HEADER_STRING);
@@ -43,9 +45,19 @@ public class TokenUtils {
         return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, refreshToken)
                 .httpOnly(true)
                 .secure(false)  // Todo : 배포 시 .secure(true)로 변경
-                .sameSite("Strict")
-                .path("/reissue")
+                .sameSite(SAME_SITE)
+                .path(PATH)
                 .maxAge(Duration.ofDays(days))
+                .build();
+    }
+
+    public static ResponseCookie createExpiredCookie() {
+        return ResponseCookie.from(REFRESH_TOKEN_COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(false)  // Todo : 배포 시 .secure(true)로 변경
+                .sameSite(SAME_SITE)
+                .path(PATH)
+                .maxAge(0)
                 .build();
     }
 }
