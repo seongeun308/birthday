@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import kim.birthday.common.error.AccountErrorCode;
 import kim.birthday.common.error.AuthErrorCode;
 import kim.birthday.dto.AuthenticatedUser;
+import kim.birthday.dto.LoginSession;
+import kim.birthday.dto.TokenPair;
 import kim.birthday.dto.UserDto;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.LoginRequest;
@@ -252,6 +254,37 @@ public class UserIntegrationTest {
                 .andExpect(jsonPath("$.internalCode").value(AuthErrorCode.MISMATCH_PASSWORD.getInternalCode()))
                 .andExpect(jsonPath("$.message").value(AuthErrorCode.MISMATCH_PASSWORD.getMessage()))
                 .andDo(document("password-verify/password-mismatch",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    @Test
+    void 로그아웃_성공_시_200_반환() throws Exception {
+        // 로그인 수행
+        TokenPair tokenPair = userService.login(user);
+        LoginSession loginSession = new LoginSession(user, tokenPair.getAccessToken().getToken());
+        JwtAuthenticationToken authToken = new JwtAuthenticationToken(loginSession, List.of(user.getRole().toAuthority()));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        mockMvc.perform(post("/logout"))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("refresh_token"))
+                .andExpect(cookie().value("refresh_token", ""))
+                .andExpect(cookie().maxAge("refresh_token", 0))
+                .andDo(document("logout/success",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
+    @Test
+    void 유효하지_않은_AT로_로그아웃_실패_시_401_반환() throws Exception {
+        LoginSession loginSession = new LoginSession(user, "tt");
+        JwtAuthenticationToken authToken = new JwtAuthenticationToken(loginSession, List.of(user.getRole().toAuthority()));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        mockMvc.perform(post("/logout"))
+                .andExpect(status().isUnauthorized())
+                .andDo(document("logout/invalid-token",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint())));
     }

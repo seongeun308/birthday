@@ -50,6 +50,7 @@ public class TestSecurityConfig {
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .authenticationManager(authenticationManager)
                 .addFilterAt(authFilter, UsernamePasswordAuthenticationFilter.class)
