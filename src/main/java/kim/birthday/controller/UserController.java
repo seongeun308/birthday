@@ -6,6 +6,7 @@ import kim.birthday.common.api.Api;
 import kim.birthday.common.error.AccountErrorCode;
 import kim.birthday.common.exception.AccountException;
 import kim.birthday.dto.AuthenticatedUser;
+import kim.birthday.dto.LoginSession;
 import kim.birthday.dto.TokenPair;
 import kim.birthday.dto.request.ChangePasswordRequest;
 import kim.birthday.dto.request.SignupRequest;
@@ -97,5 +98,14 @@ public class UserController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(Api.ok(reissueResponse));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Api<Void>> logout(@AuthenticationPrincipal LoginSession loginSession) {
+        userService.logout(loginSession);
+        ResponseCookie expiredCookie = TokenUtils.createExpiredCookie();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, expiredCookie.toString())
+                .body(Api.ok());
     }
 }
