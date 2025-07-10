@@ -1,5 +1,6 @@
 package kim.birthday.controller;
 
+import jakarta.validation.Valid;
 import kim.birthday.common.api.Api;
 import kim.birthday.common.error.AccountErrorCode;
 import kim.birthday.common.exception.AccountException;
@@ -30,7 +31,7 @@ public class BirthdayController {
 
     @PostMapping
     public ResponseEntity<Api<Void>> addBirthday(
-            @RequestBody BirthdayAddRequest request,
+            @Valid @RequestBody BirthdayAddRequest request,
             @AuthenticationPrincipal LoginSession loginSession) {
         String publicId = birthdayService.add(request, loginSession.userId());
 
