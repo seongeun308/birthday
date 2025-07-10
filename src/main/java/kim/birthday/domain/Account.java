@@ -10,6 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -46,6 +48,9 @@ public class Account {
     @Column(nullable = false)
     @Builder.Default
     private boolean isActive = true;
+
+    @OneToMany(mappedBy = "account")
+    private List<Birthday> birthdays = new ArrayList<>();
 
     public void changePassword(String password) {
         this.password = password;
