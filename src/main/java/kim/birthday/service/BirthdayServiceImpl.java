@@ -1,0 +1,24 @@
+package kim.birthday.service;
+
+import kim.birthday.common.converter.BirthdayConverter;
+import kim.birthday.domain.Birthday;
+import kim.birthday.dto.request.BirthdayAddRequest;
+import kim.birthday.repository.BirthdayRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class BirthdayServiceImpl implements BirthdayService {
+
+    private final BirthdayRepository birthdayRepository;
+
+    @Override
+    public String add(BirthdayAddRequest request) {
+        Birthday birthday = BirthdayConverter.toEntity(request);
+        Birthday saved = birthdayRepository.save(birthday);
+        return saved.getPublicId();
+    }
+}
