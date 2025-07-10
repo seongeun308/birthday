@@ -34,7 +34,7 @@ public class BirthServiceTest {
 
     @Test
     void 생일_등록_성공() {
-        BirthdayAddRequest request = new BirthdayAddRequest("홍길동", LocalDate.of(2025, 7, 10));
+        BirthdayAddRequest request = new BirthdayAddRequest("홍길동", "2025-07-25");
         Account account = Account.builder().build();
         Birthday birthday = Birthday.builder().publicId("testPublicId").build();
         given(birthdayRepository.save(any(Birthday.class))).willReturn(birthday);
