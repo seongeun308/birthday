@@ -50,6 +50,7 @@ public class Account {
     private boolean isActive = true;
 
     @OneToMany(mappedBy = "account")
+    @Builder.Default
     private List<Birthday> birthdays = new ArrayList<>();
 
     public void changePassword(String password) {
